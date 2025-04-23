@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import stkPushRouter from './routes/stk-route.js';
 import bodyParser from 'body-parser'
+import connectDB from './config/db.js';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(bodyParser.json())
 
 const PORT = process.env.PORT || 3000;
 
+connectDB();
 app.use("/api", stkPushRouter);
 app.get("/", (req, res) => res.send("STK push is running"));
 
