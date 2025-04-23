@@ -1,7 +1,7 @@
 import transaction from "../models/transactionModel.js";
 import { getTokenRequest } from "../utils/auth.js";
 import dotenv from "dotenv";
-
+import bodyParser from "body-parser";
 dotenv.config();
 
 export const STKPush = async (req, res) => {
