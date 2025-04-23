@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json())
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 connectDB();
 app.use("/api", stkPushRouter);
