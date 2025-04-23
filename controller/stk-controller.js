@@ -15,13 +15,13 @@ export const STKPush = async (req, res) => {
     const token = await getTokenRequest();
     // console.log(token);
 
-    console.log("Payload:", JSON.stringify({
-        phoneNumber,
-        amount,
-        invoiceNumber,
-        sharedShortCode: true,
-        callbackUrl: process.env.CALLBACK_URL,
-      }));
+    // console.log("Payload:", JSON.stringify({
+    //     phoneNumber,
+    //     amount,
+    //     invoiceNumber,
+    //     sharedShortCode: true,
+    //     callbackUrl: process.env.CALLBACK_URL,
+    //   }));
 
     const response = await fetch(process.env.STK_PUSH_URL, {
       method: "POST",
