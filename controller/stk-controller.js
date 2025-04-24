@@ -49,8 +49,6 @@ export const STKPush = async (req, res) => {
 };
 
 export const stkCallBack = async (req, res) => {
-    if (!req.body) return res.status(404).json({ message: 'No callback data received' });
-  
     const callbackData = req.body?.Body?.stkCallback;
     console.log("📲 MPESA Callback Received:");
     console.log(JSON.stringify(req.body, null, 2));
