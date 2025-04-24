@@ -15,13 +15,13 @@ export const STKPush = async (req, res) => {
     const token = await getTokenRequest();
     // console.log(token);
 
-    // console.log("Payload:", JSON.stringify({
-    //     phoneNumber,
-    //     amount,
-    //     invoiceNumber,
-    //     sharedShortCode: true,
-    //     callbackUrl: process.env.CALLBACK_URL,
-    //   }));
+    console.log("Payload:", JSON.stringify({
+        phoneNumber,
+        amount,
+        invoiceNumber,
+        sharedShortCode: false,
+        callbackUrl: process.env.CALLBACK_URL,
+      }));
 
     const response = await fetch(process.env.STK_PUSH_URL, {
       method: "POST",
@@ -32,9 +32,9 @@ export const STKPush = async (req, res) => {
         phoneNumber: phoneNumber,
         amount: amount,
         invoiceNumber: invoiceNumber,
-        sharedShortCode: true,
-        orgShortCode: "", // Optional
-        orgPassKey: "", // Optional
+        sharedShortCode: false,
+        orgShortCode: "123fds", // Optional
+        orgPassKey: "w2sdd", // Optional
         callbackUrl: process.env.CALLBACK_URL,
         transactionDescription: "Payment for Service", // Optional description
       }),
@@ -52,7 +52,7 @@ export const stkCallBack = async (req, res) => {
     if (!req.body) return res.status(404).json({ message: 'No callback data received' });
   
     const callbackData = req.body?.Body?.stkCallback;
-    console.log("📲 M-PESA Callback Received:");
+    console.log("📲 MPESA Callback Received:");
     console.log(JSON.stringify(req.body, null, 2));
   
     if (!callbackData || callbackData.ResultCode !== 0) {
