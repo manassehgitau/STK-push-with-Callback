@@ -1,8 +1,14 @@
 import transaction from "../models/transactionModel.js";
 import { getTokenRequest } from "../utils/auth.js";
+import { MongoClient } from "mongodb"
 import dotenv from "dotenv";
 
 dotenv.config();
+const mongoURI = process.env.MONGO_URI
+const client = new MongoClient(mongoURI)
+const database = client.db('priceTracker')
+const usersCollection = database.collection('users')
+const transactionCollection = database.collection('transactions')
 
 export const STKPush = async (req, res) => {
   try {
@@ -39,6 +45,29 @@ export const STKPush = async (req, res) => {
         transactionDescription: "Payment for Service", // Optional description
       }),
     });
+    
+    // Start Push to database Fake
+    // const 
+    // payment = {
+    //   receipt: invoiceNumber,
+    //   phone: phoneNumber,
+    //   amount: amount,
+    //   transactionDate: new Date().toDateString(),
+    // };
+  
+    // console.log("✅ Verified Payment:", payment);
+  
+    // try {
+    //   const newTransaction = new transaction(payment);
+    //   await newTransaction.save();
+
+    // } catch (error) {
+    //   console.error("❌ Error saving payment:", error.message);
+    //   res.status(500).json({ error: "Internal Server Error" });
+    // }
+
+    // End Push to database Fake
+
     const responseData = await response.json();
     if (response.ok) {
       res.status(201).json(responseData);
@@ -83,7 +112,23 @@ export const stkCallBack = async (req, res) => {
     try {
       const newTransaction = new transaction(payment);
       await newTransaction.save();
-  
+
+      const result = await usersCollection.updateOne(
+        {phone_number: payment.phone},
+        {$set: {sms_tokens: payment.amount * 15}}
+      );
+
+      // TODO: Update the transaction schema to the isUsed flag to be true
+      console.log(`${result.modifiedCount} documents(s) updated`);
+
+      const changeUsedStatus = await transactionCollection.updateOne(
+        {receipt: payment.receipt},
+        {$set: {isUsed: true}}
+      )
+
+      console.log(`${changeUsedStatus.modifiedCount} documents(s) updated`);
+      
+      await client.close();
       res.status(200).json({
         ResultCode: 0,
         ResultDesc: "Callback received successfully",
