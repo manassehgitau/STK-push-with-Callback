@@ -19,63 +19,80 @@ export const STKPush = async (req, res) => {
     }
 
     const token = await getTokenRequest();
-    // console.log(token);
 
     console.log("Payload:", JSON.stringify({
-        phoneNumber,
-        amount,
-        invoiceNumber,
-        sharedShortCode: false,
-        callbackUrl: process.env.CALLBACK_URL,
-      }));
+      phoneNumber,
+      amount,
+      invoiceNumber,
+      sharedShortCode: false,
+      callbackUrl: process.env.CALLBACK_URL,
+    }));
 
     const response = await fetch(process.env.STK_PUSH_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token} `,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        phoneNumber: phoneNumber,
-        amount: amount,
-        invoiceNumber: invoiceNumber,
+        phoneNumber,
+        amount,
+        invoiceNumber,
         sharedShortCode: false,
-        orgShortCode: "123fds", // Optional
-        orgPassKey: "w2sdd", // Optional
+        orgShortCode: "123fds",
+        orgPassKey: "w2sdd",
         callbackUrl: process.env.CALLBACK_URL,
-        transactionDescription: "Payment for Service", // Optional description
+        transactionDescription: "Payment for Service",
       }),
     });
-    
-    // Start Push to database Fake
-    // const 
-    // payment = {
-    //   receipt: invoiceNumber,
-    //   phone: phoneNumber,
-    //   amount: amount,
-    //   transactionDate: new Date().toDateString(),
-    // };
-  
-    // console.log("✅ Verified Payment:", payment);
-  
-    // try {
-    //   const newTransaction = new transaction(payment);
-    //   await newTransaction.save();
-
-    // } catch (error) {
-    //   console.error("❌ Error saving payment:", error.message);
-    //   res.status(500).json({ error: "Internal Server Error" });
-    // }
-
-    // End Push to database Fake
 
     const responseData = await response.json();
-    if (response.ok) {
-      res.status(201).json(responseData);
-    }
+
+    // ✅ FAKE SIMULATED CALLBACK FOR DEMO PURPOSES
+    const payment = {
+      receipt: invoiceNumber,
+      phone: phoneNumber,
+      amount: amount,
+      transactionDate: new Date().toISOString(),
+    };
+
+    console.log("✅ Simulated Verified Payment (for demo):", payment);
+
+    // Save transaction
+    const newTransaction = new transaction(payment);
+    await newTransaction.save();
+
+    // Add tokens
+    const tokensToAdd = payment.amount * 15;
+
+    const result = await usersCollection.updateOne(
+      { phone_number: payment.phone },
+      { $inc: { sms_tokens: tokensToAdd } }
+    );
+
+    console.log(`${result.modifiedCount} document(s) updated with ${tokensToAdd} tokens`);
+
+    // Mark transaction as used
+    const changeUsedStatus = await transactionCollection.updateOne(
+      { receipt: payment.receipt },
+      { $set: { isUsed: true } }
+    );
+
+    console.log(`${changeUsedStatus.modifiedCount} transaction marked as used`);
+
+    // ✅ END DEMO LOGIC
+
+    res.status(201).json({
+      message: "STK push simulated successfully",
+      response: responseData,
+      fake_payment: payment,
+    });
+
   } catch (err) {
+    console.error("❌ Error in STKPush:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 export const stkCallBack = async (req, res) => {
     const callbackData = req.body?.Body?.stkCallback;
@@ -113,9 +130,11 @@ export const stkCallBack = async (req, res) => {
       const newTransaction = new transaction(payment);
       await newTransaction.save();
 
+      const tokensToAdd = payment.amount * 15;
+
       const result = await usersCollection.updateOne(
         {phone_number: payment.phone},
-        {$set: {sms_tokens: payment.amount * 15}}
+        {$set: {sms_tokens: tokensToAdd}}
       );
 
       // TODO: Update the transaction schema to the isUsed flag to be true
@@ -128,7 +147,6 @@ export const stkCallBack = async (req, res) => {
 
       console.log(`${changeUsedStatus.modifiedCount} documents(s) updated`);
       
-      await client.close();
       res.status(200).json({
         ResultCode: 0,
         ResultDesc: "Callback received successfully",
