@@ -63,9 +63,10 @@ export const STKPush = async (req, res) => {
 
     // Add tokens
     const tokensToAdd = payment.amount * 15;
+    const formattedPhoneNumber = phoneNumber.startsWith('+') ? payment.phone : "+" + payment.phone;
 
     const result = await usersCollection.updateOne(
-      { phone_number: payment.phone },
+      { phone_number: formattedPhoneNumber },
       { $inc: { sms_tokens: tokensToAdd } }
     );
 
@@ -131,9 +132,10 @@ export const stkCallBack = async (req, res) => {
       await newTransaction.save();
 
       const tokensToAdd = payment.amount * 15;
+      const formattedPhoneNumber = phoneNumber.startsWith('+') ? payment.phone : "+" + payment.phone;
 
       const result = await usersCollection.updateOne(
-        {phone_number: payment.phone},
+        {phone_number: formattedPhoneNumber},
         {$set: {sms_tokens: tokensToAdd}}
       );
 
