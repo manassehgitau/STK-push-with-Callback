@@ -65,7 +65,7 @@ export const STKPush = async (req, res) => {
     const tokensToAdd = payment.amount * 15;
 
     const result = await usersCollection.updateOne(
-      { phone_number: payment.phone },
+      { phone_number: payment.phone.replace('+', '') },
       { $inc: { sms_tokens: tokensToAdd } }
     );
 
@@ -133,7 +133,7 @@ export const stkCallBack = async (req, res) => {
       const tokensToAdd = payment.amount * 15;
 
       const result = await usersCollection.updateOne(
-        {phone_number: payment.phone},
+        {phone_number: payment.phone.replace('+', '')},
         {$set: {sms_tokens: tokensToAdd}}
       );
 
